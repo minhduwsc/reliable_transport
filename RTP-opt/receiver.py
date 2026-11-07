@@ -43,6 +43,7 @@ def receiver(receiver_ip, receiver_port, window_size):
                 buffer[seq] = msg
             while expected in buffer:
                 sys.stdout.buffer.write(buffer.pop(expected))
+                sys.stdout.flush()
                 expected += 1
             send_ack(s, address, seq)
 

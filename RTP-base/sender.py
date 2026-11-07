@@ -36,8 +36,10 @@ def sender(receiver_ip, receiver_port, window_size):
     chunks = [data[i : i + 1456] for i in range(0, len(data), 1456)]
     total = len(chunks)
 
-    s.sendto(make_packet(0, 0), addr)
-    wait_ack(s, 5)
+    while True:
+        s.sendto(make_packet(0, 0), addr)
+        if wait_ack(s, 0.5) == 1:
+            break
 
     base = 1
     next_seq = 1
@@ -59,13 +61,14 @@ def sender(receiver_ip, receiver_port, window_size):
             timer = time.time()
 
     end_seq = total + 1
-    s.sendto(make_packet(1, end_seq), addr)
     deadline = time.time() + 0.5
-    while True:
+    while time.time() < deadline:
+        s.sendto(make_packet(1, end_seq), addr)
         remaining = deadline - time.time()
-        if remaining <= 0:
+        wait_time = min(0.1, remaining)
+        if wait_time <= 0:
             break
-        if wait_ack(s, remaining) == end_seq:
+        if wait_ack(s, wait_time) == end_seq:
             break
 
 
